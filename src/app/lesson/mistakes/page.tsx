@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
 import { defaultDialect, dialectByCode } from "@/lib/dialects";
+import { button, card, cx, layout, reveal, tag, text } from "@/lib/ui-classes";
 
 export const dynamic = "force-dynamic";
 
@@ -49,72 +50,56 @@ export default async function MistakesReviewPage() {
     id: f.id,
     romaniWord: f.romaniWord,
     translationRu: f.concept.translationRu,
-    transcription: f.transcription
+    transcription: f.transcription,
+    senseNote: f.concept.senseNote,
+    dialectNote: f.notes
   }));
 
   return (
     <>
       <SiteNav variant="app" authed />
 
-      <main className="shell" style={{ paddingBottom: 60 }}>
-        <div style={{ paddingTop: 28 }}>
-          <Link href="/dashboard" className="lesson-back reveal reveal-1">
+      <main className={cx(layout.shell, "pb-[60px] max-[600px]:w-[calc(100%_-_24px)] max-[600px]:pb-[calc(24px_+_var(--safe-bottom))] max-[380px]:w-[calc(100%_-_20px)]")}>
+        <div className="pt-7 max-[600px]:pt-3.5 max-[380px]:pt-2.5">
+          <Link href="/dashboard" className={cx("inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft transition-[color,gap] hover:gap-3 hover:text-madder max-[600px]:text-[10px] max-[600px]:tracking-[0.1em]", reveal[1])}>
             ← Назад к программе
           </Link>
         </div>
 
-        <header
-          className="trainer-head reveal reveal-2"
-          style={{ paddingTop: 18, paddingBottom: 28 }}
-        >
+        <header className={cx("grid grid-cols-[1fr_auto] items-end gap-[18px] pb-7 pt-[18px] max-[640px]:grid-cols-1 max-[640px]:items-start max-[640px]:gap-3 max-[600px]:gap-2 max-[600px]:pb-4 max-[600px]:pt-3 max-[380px]:pb-3 max-[380px]:pt-2", reveal[2])}>
           <div>
-            <p className="kicker">{dialect.shortLabel} · повторение</p>
-            <h1 style={{ marginTop: 8 }}>
+            <p className={text.kicker}>{dialect.shortLabel} · повторение</p>
+            <h1 className="mt-2 font-display text-[clamp(36px,5vw,56px)] font-normal leading-none tracking-[-0.02em] max-[600px]:mt-1 max-[600px]:text-[clamp(28px,8.5vw,38px)] max-[380px]:text-[clamp(26px,8vw,34px)]">
               Слова, которые{" "}
-              <em>не дались</em>{" "}
+              <em className="italic text-madder">не дались</em>{" "}
               в прошлый раз
             </h1>
           </div>
           <span
-            className="tag tag-madder"
-            style={{ alignSelf: "center" }}
+            className={cx(tag.madder, "self-center max-[640px]:self-start max-[600px]:px-[9px] max-[600px]:py-1 max-[600px]:text-[9px]")}
           >
             мини-квиз
           </span>
         </header>
 
         {words.length === 0 ? (
-          <div
-            className="panel"
-            style={{
-              padding: "48px 36px",
-              textAlign: "center",
-              background: "linear-gradient(160deg, var(--cream), var(--paper-warm))"
-            }}
-          >
-            <p className="kicker" style={{ color: "var(--teal-deep)" }}>
+          <div className={cx(card.panel, "bg-paper-panel px-9 py-12 text-center max-[600px]:px-[18px] max-[600px]:py-8")}>
+            <p className={cx(text.kicker, "text-teal-deep")}>
               ✦ всё чисто
             </p>
-            <h2
-              style={{
-                margin: "12px 0 10px",
-                fontFamily: "var(--font-display)",
-                fontSize: "clamp(28px, 4vw, 40px)",
-                fontWeight: 400
-              }}
-            >
+            <h2 className="mb-2.5 mt-3 font-display text-[clamp(28px,4vw,40px)] font-normal">
               Сейчас слов на повторение нет.
             </h2>
-            <p style={{ margin: "0 auto 24px", color: "var(--ink-soft)", fontSize: 15, maxWidth: 460 }}>
+            <p className={cx(text.bodySm, "mx-auto mb-6 max-w-[460px]")}>
               Пройдите ещё несколько уроков — те слова, в которых вы ошибётесь,
               автоматически попадут сюда.
             </p>
-            <Link href="/dashboard" className="btn btn-ink">
+            <Link href="/dashboard" className={button.ink}>
               К программе курса →
             </Link>
           </div>
         ) : (
-          <div className="reveal reveal-3">
+          <div className={reveal[3]}>
             <LessonTrainer
               lessonId="__mistakes__"
               lessonType="QUIZ"

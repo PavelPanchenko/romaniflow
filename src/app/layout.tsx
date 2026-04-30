@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Spectral, Manrope, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
+import { getSiteUrl, siteMetadataBase } from "@/lib/site-url";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE } from "@/lib/seo-constants";
 import "./globals.css";
 
 const spectral = Spectral({
@@ -26,30 +28,61 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RomaniFlow — изучайте цыганский язык",
-  description:
-    "Интерактивная платформа для изучения восточноевропейского варианта цыганского языка: карточки, мини-квизы, транскрипция и личный прогресс."
+  metadataBase: siteMetadataBase(),
+  title: {
+    default: SITE_TITLE,
+    template: `%s · ${SITE_NAME}`
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: [
+    "цыганский язык",
+    "романи",
+    "Romani",
+    "Eastern Romani",
+    "обучение",
+    "карточки",
+    "диалекты цыганского",
+    SITE_NAME
+  ],
+  authors: [{ name: SITE_NAME, url: getSiteUrl() }],
+  creator: SITE_NAME,
+  icons: {
+    icon: [{ url: "/brand-glyph.svg", type: "image/svg+xml" }]
+  },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    url: "/",
+    siteName: SITE_NAME,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true }
+  },
+  category: "education"
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F2EAD6"
+  themeColor: "#F2EAD6",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${spectral.variable} ${manrope.variable} ${jetbrains.variable}`}>
-      <body
-        style={{
-          fontFamily: "var(--font-body-loaded), var(--font-body)"
-        }}
-      >
-        <style>{`
-          :root {
-            --font-display: var(--font-display-loaded), 'Spectral', 'Times New Roman', serif;
-            --font-body: var(--font-body-loaded), 'Manrope', system-ui, sans-serif;
-            --font-mono: var(--font-mono-loaded), 'JetBrains Mono', ui-monospace, monospace;
-          }
-        `}</style>
+      <body className="font-body">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -1,3 +1,5 @@
+import { cx, text } from "@/lib/ui-classes";
+
 type Props = {
   variant?: "wide" | "compact";
   label?: string;
@@ -6,21 +8,20 @@ type Props = {
 export function Ornament({ variant = "wide", label }: Props) {
   return (
     <div
-      className="ornament"
-      style={{
-        margin: variant === "wide" ? "32px 0" : "16px 0",
-        opacity: 0.85
-      }}
+      className={cx(
+        "flex items-center gap-[18px] text-ink-soft opacity-85 max-[600px]:!my-6 max-[600px]:gap-2.5 max-[380px]:!my-[18px]",
+        variant === "wide" ? "my-8" : "my-4"
+      )}
       aria-hidden={!label}
     >
-      <span className="line" />
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-ink-soft to-transparent opacity-35" />
       <svg
         width="120"
         height="20"
         viewBox="0 0 120 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ flex: "0 0 auto" }}
+        className="shrink-0 max-[600px]:h-auto max-[600px]:w-[min(86px,26vw)]"
       >
         {/* Folk diamond–chain–diamond */}
         <path d="M2 10 L20 10" stroke="currentColor" strokeWidth="1" />
@@ -45,13 +46,15 @@ export function Ornament({ variant = "wide", label }: Props) {
       </svg>
       {label ? (
         <span
-          className="kicker"
-          style={{ flex: "0 0 auto", letterSpacing: "0.2em", color: "var(--ink-mute)" }}
+          className={cx(
+            text.kicker,
+            "shrink-0 tracking-[0.2em] text-ink-mute max-[600px]:max-w-[42vw] max-[600px]:text-center max-[600px]:!text-[9px] max-[600px]:!tracking-[0.13em]"
+          )}
         >
           {label}
         </span>
       ) : null}
-      <span className="line" />
+      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-ink-soft to-transparent opacity-35" />
     </div>
   );
 }

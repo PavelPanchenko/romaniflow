@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { button, form, reveal, text } from "@/lib/ui-classes";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -46,36 +47,36 @@ export function SignUpForm() {
   }
 
   return (
-    <form action={onSubmit} className="auth-form">
+    <form action={onSubmit} className="grid w-[min(420px,100%)] gap-[22px] max-[600px]:gap-5 max-[380px]:gap-4">
       <div>
-        <p className="eyebrow reveal reveal-1">
-          <span className="dot" />
+        <p className={`${text.eyebrow} ${reveal[1]}`}>
+          <span className={text.eyebrowDot} />
           новая тетрадь учения
         </p>
-        <h1 className="reveal reveal-2">
-          Открой <em>первую</em> страницу.
+        <h1 className={`${reveal[2]} m-0 font-display text-5xl font-normal leading-none tracking-[-0.02em] max-[600px]:text-[clamp(34px,10vw,42px)] max-[380px]:text-[clamp(30px,9vw,38px)]`}>
+          Открой <em className="italic text-madder">первую</em> страницу.
         </h1>
-        <p className="auth-foot reveal reveal-3" style={{ marginTop: 10 }}>
+        <p className={`${reveal[3]} mt-2.5 text-sm text-ink-mute`}>
           Бесплатно. Без рекламы. Без отвлекающих геймификаций.
         </p>
       </div>
 
-      <div className="field reveal reveal-3">
-        <label htmlFor="signup-name">Как вас называть</label>
+      <div className={`${form.field} ${reveal[3]}`}>
+        <label className={form.label} htmlFor="signup-name">Как вас называть</label>
         <input
           id="signup-name"
-          className="input"
+          className={form.input}
           type="text"
           name="name"
           placeholder="Имя или ник"
           autoComplete="name"
         />
       </div>
-      <div className="field reveal reveal-4">
-        <label htmlFor="signup-email">Электронная почта</label>
+      <div className={`${form.field} ${reveal[4]}`}>
+        <label className={form.label} htmlFor="signup-email">Электронная почта</label>
         <input
           id="signup-email"
-          className="input"
+          className={form.input}
           type="email"
           name="email"
           placeholder="vasja@example.ru"
@@ -83,11 +84,11 @@ export function SignUpForm() {
           autoComplete="email"
         />
       </div>
-      <div className="field reveal reveal-4">
-        <label htmlFor="signup-password">Пароль</label>
+      <div className={`${form.field} ${reveal[4]}`}>
+        <label className={form.label} htmlFor="signup-password">Пароль</label>
         <input
           id="signup-password"
-          className="input"
+          className={form.input}
           type="password"
           name="password"
           placeholder="не менее 8 символов"
@@ -97,13 +98,12 @@ export function SignUpForm() {
         />
       </div>
 
-      {error ? <p className="auth-error reveal">{error}</p> : null}
+      {error ? <p className={`${form.error} ${reveal.base}`}>{error}</p> : null}
 
       <button
-        className="btn btn-madder reveal reveal-5"
+        className={`${button.madder} ${reveal[5]} mt-2 max-[600px]:w-full`}
         type="submit"
         disabled={loading}
-        style={{ marginTop: 8 }}
       >
         {loading ? "Создаём…" : "Создать аккаунт →"}
       </button>

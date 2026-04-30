@@ -56,7 +56,7 @@ export const LESSON_GROUPS: LessonGroupSpec[] = [
     title: "Дом и еда",
     description: "Слова, которыми наполнен дом и стол",
     categories: [ConceptCategory.HOME, ConceptCategory.FOOD],
-    isPremium: false,
+    isPremium: true,
     itemsPerLesson: 15
   },
   {

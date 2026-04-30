@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { db } from "@/lib/db";
 import { hasPremiumAccess } from "@/lib/monetization";
 import { getSessionUser } from "@/lib/session";
+import { cx, layout, reveal, tag, text } from "@/lib/ui-classes";
 
 type Props = {
   params: Promise<{ lessonId: string }>;
@@ -124,6 +125,8 @@ export default async function LessonPage({ params }: Props) {
     romaniWord: item.dialectForm.romaniWord,
     translationRu: item.concept.translationRu,
     transcription: item.dialectForm.transcription,
+    senseNote: item.concept.senseNote,
+    dialectNote: item.dialectForm.notes,
     variants: variantsByConcept.get(item.conceptId) ?? []
   }));
 
@@ -133,38 +136,37 @@ export default async function LessonPage({ params }: Props) {
     <>
       <SiteNav variant="app" authed />
 
-      <main className="shell" style={{ paddingBottom: 60 }}>
-        <div style={{ paddingTop: 28 }}>
-          <Link href="/dashboard" className="lesson-back reveal reveal-1">
+      <main className={cx(layout.shell, "pb-[60px] max-[600px]:w-[calc(100%_-_24px)] max-[600px]:pb-[calc(24px_+_var(--safe-bottom))] max-[380px]:w-[calc(100%_-_20px)]")}>
+        <div className="pt-7 max-[600px]:pt-3.5 max-[380px]:pt-2.5">
+          <Link href="/dashboard" className={cx("inline-flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.14em] text-ink-soft transition-[color,gap] hover:gap-3 hover:text-madder max-[600px]:text-[10px] max-[600px]:tracking-[0.1em]", reveal[1])}>
             ← Назад к программе
           </Link>
         </div>
 
-        <header
-          className="trainer-head reveal reveal-2"
-          style={{ paddingTop: 18, paddingBottom: 28 }}
-        >
+        <header className={cx("grid grid-cols-[1fr_auto] items-end gap-[18px] pb-7 pt-[18px] max-[640px]:grid-cols-1 max-[640px]:items-start max-[640px]:gap-3 max-[600px]:gap-2 max-[600px]:pb-4 max-[600px]:pt-3 max-[380px]:pb-3 max-[380px]:pt-2", reveal[2])}>
           <div>
-            <p className="kicker">{lesson.module.title}</p>
-            <h1 style={{ marginTop: 8 }}>
+            <p className={text.kicker}>{lesson.module.title}</p>
+            <h1 className="mt-2 font-display text-[clamp(36px,5vw,56px)] font-normal leading-none tracking-[-0.02em] max-[600px]:mt-1 max-[600px]:text-[clamp(28px,8.5vw,38px)] max-[380px]:text-[clamp(26px,8vw,34px)]">
               {lesson.title.split(":")[0]}
               {lesson.title.includes(":") ? (
                 <>
                   :{" "}
-                  <em>{lesson.title.split(":").slice(1).join(":").trim()}</em>
+                  <em className="italic text-madder">{lesson.title.split(":").slice(1).join(":").trim()}</em>
                 </>
               ) : null}
             </h1>
           </div>
           <span
-            className={lesson.type === "FLASHCARDS" ? "tag tag-saffron" : "tag tag-madder"}
-            style={{ alignSelf: "center" }}
+            className={cx(
+              lesson.type === "FLASHCARDS" ? tag.saffron : tag.madder,
+              "self-center max-[640px]:self-start max-[600px]:px-[9px] max-[600px]:py-1 max-[600px]:text-[9px]"
+            )}
           >
             {lesson.type === "FLASHCARDS" ? "флэшкарты" : "мини-квиз"}
           </span>
         </header>
 
-        <div className="reveal reveal-3">
+        <div className={reveal[3]}>
           <LessonTrainer
             lessonId={lesson.id}
             lessonType={lesson.type}

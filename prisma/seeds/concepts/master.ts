@@ -120,12 +120,26 @@ const PROJECT_CONCEPTS: ConceptSeed[] = [
   { slug: "nedelya",  translationRu: "Неделя",  category: ConceptCategory.TIME,        frequencyRank: 73 },
 
   // Живые фразы для разговора
-  { slug: "kak-tebya-zovut", translationRu: "Как тебя зовут?", category: ConceptCategory.PHRASE, frequencyRank: 11 },
+  {
+    slug: "kak-tebya-zovut",
+    translationRu: "Как тебя зовут?",
+    category: ConceptCategory.PHRASE,
+    frequencyRank: 11,
+    senseNote:
+      "Обычная фраза при знакомстве — «как вас зовут?». В сэрвском звучит как Sar tut bušon?: это не дословный порядок русских слов, а устойчивое выражение с тем же смыслом."
+  },
   { slug: "ne-ponimayu",     translationRu: "Не понимаю",      category: ConceptCategory.PHRASE, frequencyRank: 12 },
   { slug: "menya-zovut",     translationRu: "Меня зовут",      category: ConceptCategory.PHRASE, frequencyRank: 13, senseNote: "буквально 'имя моё (есть)…'" },
   { slug: "ya-znayu",        translationRu: "Я знаю",          category: ConceptCategory.PHRASE, frequencyRank: 14 },
   { slug: "ya-ne-znayu",     translationRu: "Я не знаю",       category: ConceptCategory.PHRASE, frequencyRank: 15 },
-  { slug: "skolko-stoit",    translationRu: "Сколько стоит?",  category: ConceptCategory.PHRASE, frequencyRank: 16 },
+  {
+    slug: "skolko-stoit",
+    translationRu: "Сколько стоит?",
+    category: ConceptCategory.PHRASE,
+    frequencyRank: 16,
+    senseNote:
+      "О цене, покупке, рынке. Не путать с вопросами «сколько (раз, человек…)» — для них в живой речи другие обороты (часто с числительным или отдельным вопросительным словом)."
+  },
   { slug: "idi-syuda",       translationRu: "Иди сюда",        category: ConceptCategory.PHRASE, frequencyRank: 17, senseNote: "буквально 'приходи сюда' (av — императив te avel)" },
   { slug: "podozhdi",        translationRu: "Подожди",         category: ConceptCategory.PHRASE, frequencyRank: 18 },
   { slug: "pomogi-mne",      translationRu: "Помоги мне",      category: ConceptCategory.PHRASE, frequencyRank: 19 },
@@ -140,6 +154,14 @@ const PROJECT_CONCEPTS: ConceptSeed[] = [
   { slug: "ya-khochu",       translationRu: "Я хочу",          category: ConceptCategory.PHRASE, frequencyRank: 28 },
   { slug: "ya-ne-khochu",    translationRu: "Я не хочу",       category: ConceptCategory.PHRASE, frequencyRank: 29 },
   { slug: "chto-novogo",     translationRu: "Что нового?",     category: ConceptCategory.PHRASE, frequencyRank: 30 },
+  {
+    slug: "skolko-kolichestvo",
+    translationRu: "Сколько? (о количестве)",
+    category: ConceptCategory.PHRASE,
+    frequencyRank: 31,
+    senseNote:
+      "Сколько людей, лет, раз, штук — не про цену (для цены: «Sode mol?»). Примеры в учебных текстах: Keci hin … čhave?, Keci tuke berš?. В реконструкции раннего романи часто фиксируют форму keti; в славяно-контактной орфографии встречается keci."
+  },
 
   // — Бытовая лексика за пределами Swadesh (Phase «В») —
   // Время суток и календарь
@@ -199,7 +221,36 @@ const PROJECT_CONCEPTS: ConceptSeed[] = [
   { slug: "khotet",   translationRu: "Хотеть",   category: ConceptCategory.VERB_SPEECH,  frequencyRank: 290 },
   { slug: "moch",     translationRu: "Мочь",     category: ConceptCategory.VERB_ACTION,  frequencyRank: 291 },
   { slug: "pomoch",   translationRu: "Помочь",   category: ConceptCategory.VERB_ACTION,  frequencyRank: 292 },
-  { slug: "prosit",   translationRu: "Просить",  category: ConceptCategory.VERB_SPEECH,  frequencyRank: 293 }
+  { slug: "prosit",   translationRu: "Просить",  category: ConceptCategory.VERB_SPEECH,  frequencyRank: 293 },
+
+  // Глаголы — расширение рабочего разговорного слоя
+  { slug: "bezhat",       translationRu: "Бежать",         category: ConceptCategory.VERB_ACTION, frequencyRank: 294 },
+  { slug: "iskat",        translationRu: "Искать",         category: ConceptCategory.VERB_ACTION, frequencyRank: 295 },
+  { slug: "nakhodit",     translationRu: "Находить",       category: ConceptCategory.VERB_ACTION, frequencyRank: 296 },
+  { slug: "brat-v-ruki",  translationRu: "Брать",          category: ConceptCategory.VERB_ACTION, frequencyRank: 297, senseNote: "брать в руки, забирать" },
+  { slug: "prinosit",     translationRu: "Приносить",      category: ConceptCategory.VERB_ACTION, frequencyRank: 298 },
+  { slug: "posylat",      translationRu: "Посылать",       category: ConceptCategory.VERB_ACTION, frequencyRank: 299 },
+  { slug: "otkryvat",     translationRu: "Открывать",      category: ConceptCategory.VERB_ACTION, frequencyRank: 300 },
+  { slug: "zakryvat",     translationRu: "Закрывать",      category: ConceptCategory.VERB_ACTION, frequencyRank: 301 },
+  { slug: "sprashivat",   translationRu: "Спрашивать",     category: ConceptCategory.VERB_SPEECH, frequencyRank: 302 },
+  { slug: "zhdat",        translationRu: "Ждать",          category: ConceptCategory.VERB_ACTION, frequencyRank: 303 },
+  { slug: "chitat",       translationRu: "Читать",         category: ConceptCategory.VERB_SPEECH, frequencyRank: 304 },
+  { slug: "pisat",        translationRu: "Писать",         category: ConceptCategory.VERB_SPEECH, frequencyRank: 305 },
+  { slug: "zabyvat",      translationRu: "Забывать",       category: ConceptCategory.VERB_SPEECH, frequencyRank: 306 },
+  { slug: "pokazyvat",    translationRu: "Показывать",     category: ConceptCategory.VERB_SPEECH, frequencyRank: 307 },
+  { slug: "uchit",        translationRu: "Учить",          category: ConceptCategory.VERB_SPEECH, frequencyRank: 308, senseNote: "обучать, объяснять" },
+  { slug: "ponimat",      translationRu: "Понимать",       category: ConceptCategory.VERB_SPEECH, frequencyRank: 309 },
+  { slug: "nazyvat",      translationRu: "Называть",       category: ConceptCategory.VERB_SPEECH, frequencyRank: 310, senseNote: "давать имя, именовать" },
+  { slug: "otvechat",     translationRu: "Отвечать",       category: ConceptCategory.VERB_SPEECH, frequencyRank: 311 },
+  { slug: "povtoryat",    translationRu: "Повторять",      category: ConceptCategory.VERB_SPEECH, frequencyRank: 312 },
+  { slug: "obyasnyat",    translationRu: "Объяснять",      category: ConceptCategory.VERB_SPEECH, frequencyRank: 313 },
+  { slug: "soglashatsya", translationRu: "Соглашаться",    category: ConceptCategory.VERB_SPEECH, frequencyRank: 314 },
+  { slug: "otkazyvatsya", translationRu: "Отказываться",   category: ConceptCategory.VERB_SPEECH, frequencyRank: 315 },
+  { slug: "razreshat",    translationRu: "Разрешать",      category: ConceptCategory.VERB_SPEECH, frequencyRank: 316, senseNote: "позволять" },
+  { slug: "zapreshchat",  translationRu: "Запрещать",      category: ConceptCategory.VERB_SPEECH, frequencyRank: 317, senseNote: "не позволять" },
+  { slug: "preduprezhdat",translationRu: "Предупреждать",  category: ConceptCategory.VERB_SPEECH, frequencyRank: 318 },
+  { slug: "izvinyatsya",  translationRu: "Извиняться",     category: ConceptCategory.VERB_SPEECH, frequencyRank: 319 },
+  { slug: "blagodarit",   translationRu: "Благодарить",    category: ConceptCategory.VERB_SPEECH, frequencyRank: 320 }
 ];
 
 // Combined export. Project concepts come first; Swadesh-207 expansion fills

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { cx } from "@/lib/ui-classes";
 
 type Props = {
   dialectLabel: string;
@@ -39,7 +40,10 @@ export function ResetProgressButton({ dialectLabel }: Props) {
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="reset-progress"
+      className={cx(
+        "inline-flex appearance-none items-center justify-center rounded-pill border border-dashed border-[rgba(26,20,12,0.28)] bg-transparent px-3.5 py-2.5 font-mono text-[12px] uppercase tracking-[0.18em] text-ink-mute transition-colors hover:enabled:border-madder hover:enabled:bg-[rgba(169,52,40,0.06)] hover:enabled:text-madder disabled:cursor-wait disabled:opacity-55",
+        "max-[600px]:w-full max-[600px]:justify-center"
+      )}
       title="Очистит уроки и историю ошибок только для текущего диалекта"
     >
       {busy ? "Сбрасываем…" : "Сбросить прогресс"}

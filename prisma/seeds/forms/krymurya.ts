@@ -80,5 +80,16 @@ export const KRYMURYA_FORMS: FormSeed[] = [
   { conceptSlug: "tyotya",    dialect: Dialect.KRYMURYA, romaniWord: "Bibi",      transcription: "би́би",      sources: ["LEGACY"], confidence: FormConfidence.UNCERTAIN },
   { conceptSlug: "dyadya",    dialect: Dialect.KRYMURYA, romaniWord: "Kako",      transcription: "ка́ко",      sources: ["LEGACY"], confidence: FormConfidence.UNCERTAIN },
   { conceptSlug: "bog",       dialect: Dialect.KRYMURYA, romaniWord: "Del",       transcription: "дэл",        sources: ["LEGACY"], confidence: FormConfidence.UNCERTAIN },
-  { conceptSlug: "udacha",    dialect: Dialect.KRYMURYA, romaniWord: "Baxt",      transcription: "бахт",       sources: ["LEGACY"], confidence: FormConfidence.UNCERTAIN }
+  { conceptSlug: "udacha",    dialect: Dialect.KRYMURYA, romaniWord: "Baxt",      transcription: "бахт",       sources: ["LEGACY"], confidence: FormConfidence.UNCERTAIN },
+
+  // — Фраза (количество; проверка у носителей) —
+  {
+    conceptSlug: "skolko-kolichestvo",
+    dialect: Dialect.KRYMURYA,
+    romaniWord: "Keci?",
+    transcription: "ке́ци",
+    sources: ["LEGACY"],
+    confidence: FormConfidence.UNCERTAIN,
+    notes: "заглушка по аналогии с сэрвами; уточнить у носителей крымских рома"
+  }
 ];

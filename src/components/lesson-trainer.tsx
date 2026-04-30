@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { button, card, cx, reveal, text } from "@/lib/ui-classes";
 
 const FLIP_DURATION_MS = 700;
 
@@ -17,12 +18,61 @@ type WordItem = {
   translationRu: string;
   transcription: string;
   variants?: Variant[];
+  /** Смысл, типичные ситуации, отличие от близких синонимов — из `Concept.senseNote`. */
+  senseNote?: string | null;
+  /** Заметка по диалектной форме / этимологии — из `DialectForm.notes`. */
+  dialectNote?: string | null;
 };
 
 const REGISTER_LABEL: Record<Variant["register"], string> = {
   COLLOQUIAL: "разг.",
   LITERARY: "книж."
 };
+
+const trainerShellClass = "grid gap-[18px] pb-12 max-[600px]:gap-3.5 max-[600px]:pb-10";
+const progressClass =
+  "flex flex-col items-start gap-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-mute max-[600px]:w-full max-[600px]:items-stretch max-[380px]:gap-1 max-[380px]:text-[9px] max-[380px]:tracking-[0.12em]";
+const progressBarClass = "h-1 w-[200px] overflow-hidden rounded-pill bg-[rgba(26,20,12,0.12)] max-[600px]:w-full";
+const iconButtonClass =
+  "grid size-12 cursor-pointer place-items-center rounded-full border border-[rgba(26,20,12,0.18)] bg-cream text-ink transition-[background,color,border-color,transform] hover:border-ink hover:bg-ink hover:text-cream active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 max-[520px]:size-11 max-[380px]:size-[42px]";
+const flashcardFaceClass =
+  "flashcard-face relative col-start-1 row-start-1 flex w-full min-w-0 flex-col items-center justify-start overflow-hidden rounded-[26px] px-8 pb-8 pt-10 shadow-page [backface-visibility:hidden] max-[600px]:rounded-[20px] max-[600px]:px-3.5 max-[600px]:pb-4 max-[600px]:pt-7 max-[380px]:rounded-[18px] max-[380px]:px-3 max-[380px]:pb-3.5 max-[380px]:pt-[26px]";
+
+function LearningContextBlock({
+  senseNote,
+  dialectNote,
+  variant
+}: {
+  senseNote?: string | null;
+  dialectNote?: string | null;
+  variant: "flashcard" | "quiz";
+}) {
+  const s = senseNote?.trim() || "";
+  const d = dialectNote?.trim() || "";
+  if (!s && !d) return null;
+  const primary = s || d;
+  const dialectExtra = s && d && d !== s ? d : "";
+  const kicker = s ? "контекст" : "подсказка";
+
+  if (variant === "quiz") {
+    return (
+      <div className="mx-auto mt-3 max-h-24 max-w-[420px] overflow-y-auto px-2 overscroll-contain">
+        <p className="m-0 text-center text-[13px] leading-[1.45] text-ink-soft max-[380px]:text-xs">{primary}</p>
+        {dialectExtra ? <p className="mt-1.5 text-center text-[11px] leading-[1.4] text-ink-mute">{dialectExtra}</p> : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-2">
+      <div className="w-full shrink-0 rounded-[14px] border border-cream/15 bg-cream/10 px-3.5 py-2.5 text-center">
+        <div className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-saffron-soft opacity-90">{kicker}</div>
+        <p className="m-0 text-sm leading-[1.45] text-cream/90 max-[600px]:text-[13px] max-[380px]:text-xs">{primary}</p>
+      </div>
+      {dialectExtra ? <p className="m-0 px-2 text-center text-xs leading-[1.4] text-cream/50">{dialectExtra}</p> : null}
+    </div>
+  );
+}
 
 type Mode = "FLASHCARDS" | "QUIZ";
 
@@ -79,6 +129,25 @@ export function LessonTrainer({
     mistakes: string[];
   } | null>(null);
   const [saving, setSaving] = useState(false);
+  const lessonTouchSentRef = useRef(false);
+
+  const touchLessonOnce = useCallback(() => {
+    if (lessonTouchSentRef.current) return;
+    if (lessonId.startsWith("__")) return;
+    lessonTouchSentRef.current = true;
+    void fetch(`/api/lesson/${lessonId}/start`, { method: "POST" }).catch(() => {});
+  }, [lessonId]);
+
+  const setFlippedWithEngagement = useCallback(
+    (updater: boolean | ((prev: boolean) => boolean)) => {
+      setFlipped((prev) => {
+        const next = typeof updater === "function" ? (updater as (p: boolean) => boolean)(prev) : updater;
+        if (next && !prev) touchLessonOnce();
+        return next;
+      });
+    },
+    [touchLessonOnce]
+  );
 
   const currentCard = words[cardIndex];
   const currentQuiz = quizOrder[quizIndex];
@@ -166,12 +235,12 @@ export function LessonTrainer({
       if (e.key === "ArrowLeft") navigateCard(-1);
       if (e.code === "Space") {
         e.preventDefault();
-        setFlipped((f) => !f);
+        setFlippedWithEngagement((f) => !f);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [stage, navigateCard]);
+  }, [stage, navigateCard, setFlippedWithEngagement]);
 
   useEffect(() => {
     return () => {
@@ -181,6 +250,7 @@ export function LessonTrainer({
 
   function pickOption(option: string) {
     if (locked || !currentQuiz) return;
+    touchLessonOnce();
     const isCorrect = option === currentQuiz.translationRu;
     setSelected(option);
     setLocked(true);
@@ -203,8 +273,8 @@ export function LessonTrainer({
 
   if (!words.length) {
     return (
-      <div className="panel">
-        <p style={{ margin: 0 }}>Для этого урока ещё нет слов.</p>
+      <div className={card.panel}>
+        <p className={text.body}>Для этого урока ещё нет слов.</p>
       </div>
     );
   }
@@ -216,20 +286,20 @@ export function LessonTrainer({
     const offset = circumference - (result / 100) * circumference;
 
     return (
-      <div className="complete-card reveal">
-        <p className="kicker complete-kicker">
+      <div className={cx("relative grid gap-[18px] overflow-hidden rounded-card bg-cream px-9 py-12 text-center shadow-page before:pointer-events-none before:absolute before:left-1/2 before:top-[-120px] before:size-[460px] before:-translate-x-1/2 before:bg-[radial-gradient(circle,rgba(212,147,58,0.22),transparent_60%)] [&>*]:relative [&>*]:z-[2] max-[600px]:px-[18px] max-[600px]:py-8 max-[380px]:gap-3.5 max-[380px]:px-3.5 max-[380px]:py-[22px]", reveal.base)}>
+        <p className={text.kicker}>
           ✦ {completeKicker ?? "урок завершён"}
         </p>
-        <h2>
+        <h2 className="m-0 font-display text-[clamp(36px,5vw,52px)] font-normal tracking-[-0.02em]">
           {result === 100
             ? "Безупречно."
             : result >= 70
-              ? <>Хорошая <em>работа</em>.</>
-              : <>Ещё чуть-чуть, <em>и получится</em>.</>}
+              ? <>Хорошая <em className="italic text-madder">работа</em>.</>
+              : <>Ещё чуть-чуть, <em className="italic text-madder">и получится</em>.</>}
         </h2>
 
-        <div className="score-ring" aria-label={`Результат ${result} процентов`}>
-          <svg viewBox="0 0 160 160" width="180" height="180">
+        <div className="mx-auto size-[180px] max-[600px]:size-[140px] max-[380px]:size-[124px]" aria-label={`Результат ${result} процентов`}>
+          <svg className="size-[180px] max-[600px]:size-[140px] max-[380px]:size-[124px]" viewBox="0 0 160 160" width="180" height="180">
             <circle
               cx="80"
               cy="80"
@@ -249,7 +319,7 @@ export function LessonTrainer({
               strokeDasharray={circumference}
               strokeDashoffset={offset}
               transform="rotate(-90 80 80)"
-              className="score-ring-fill"
+              className="transition-[stroke-dashoffset] duration-[1200ms]"
             />
             <text
               x="80"
@@ -276,18 +346,18 @@ export function LessonTrainer({
           </svg>
         </div>
 
-        <p className="complete-summary">
+        <p className="m-0 text-[15px] text-ink-soft">
           Правильно: {score} из {words.length}.
         </p>
 
         {mistakes.length ? (
           <>
-            <p className="kicker complete-mistakes-kicker">
+            <p className={cx(text.kicker, "mt-2.5 text-madder-deep")}>
               ✦ слова на повторение
             </p>
-            <div className="review">
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
               {mistakes.map((w, i) => (
-                <span key={`${w}-${i}`} className="word-pill">
+                <span key={`${w}-${i}`} className="rounded-pill bg-[rgba(169,52,40,0.10)] px-3.5 py-2 font-display text-lg italic text-madder-deep max-[380px]:text-base">
                   {w}
                 </span>
               ))}
@@ -296,15 +366,15 @@ export function LessonTrainer({
         ) : null}
 
         {saveError ? (
-          <div className="save-error" role="alert">
-            <p className="kicker">✦ результат не сохранён</p>
-            <p>
+          <div className="mt-3.5 grid justify-items-center gap-2.5 rounded-md border border-dashed border-[rgba(169,52,40,0.4)] bg-[rgba(169,52,40,0.08)] px-[18px] py-4 text-center" role="alert">
+            <p className={cx(text.kicker, "m-0 text-madder-deep")}>✦ результат не сохранён</p>
+            <p className="m-0 max-w-[480px] text-sm leading-normal text-ink-soft">
               Не удалось записать прогресс на сервер. Проверьте соединение и
               попробуйте ещё раз — иначе урок будет считаться непройденным.
             </p>
             <button
               type="button"
-              className="btn btn-ink"
+              className={button.ink}
               onClick={retrySave}
               disabled={saving}
             >
@@ -313,24 +383,24 @@ export function LessonTrainer({
           </div>
         ) : null}
 
-        <div className="complete-actions">
+        <div className="mt-4 flex flex-wrap justify-center gap-3 max-[380px]:[&_.btn]:w-full">
           {nextLessonId ? (
-            <Link href={`/lesson/${nextLessonId}`} className="btn btn-ink">
+            <Link href={`/lesson/${nextLessonId}`} className={button.ink}>
               Следующий урок →
             </Link>
           ) : (
-            <Link href="/dashboard" className="btn btn-ink">
+            <Link href="/dashboard" className={button.ink}>
               К программе курса →
             </Link>
           )}
           {nextLessonId ? (
-            <Link href="/dashboard" className="btn btn-ghost">
+            <Link href="/dashboard" className={button.ghost}>
               К программе курса
             </Link>
           ) : null}
           <button
             type="button"
-            className="btn btn-ghost"
+            className={button.ghost}
             onClick={() => {
               setStage(lessonType === "QUIZ" ? "quiz" : "flashcards");
               setCardIndex(0);
@@ -352,58 +422,77 @@ export function LessonTrainer({
 
   if (stage === "flashcards") {
     return (
-      <div className="lesson-shell" style={{ padding: 0 }}>
-        <div className="trainer-progress" style={{ alignItems: "flex-start" }}>
+      <div className={trainerShellClass}>
+        <div className={progressClass}>
           <span>
             Карточка {cardIndex + 1} / {words.length}
           </span>
-          <div className="bar">
-            <div style={{ width: `${((cardIndex + 1) / words.length) * 100}%` }} />
+          <div className={progressBarClass}>
+            <div className="h-full bg-ink transition-[width] duration-500" style={{ width: `${((cardIndex + 1) / words.length) * 100}%` }} />
           </div>
         </div>
 
-        <div className="flashcard-stage">
+        <div className="grid place-items-center py-3.5 [perspective:1600px] max-[600px]:py-1">
           <div
-            className={`flashcard ${flipped ? "flipped" : ""}`}
+            className={cx(
+              "flashcard grid w-[min(560px,100%)] grid-cols-[min(560px,100%)] [--fc-romani-fs:clamp(28px,4.5vw,46px)] [--fc-ru-fs:clamp(22px,3.8vw,36px)] [--flashcard-h:max(232px,min(312px,calc(100dvh_-_320px)))] min-h-[var(--flashcard-h)] cursor-pointer touch-manipulation [transform-style:preserve-3d] transition-transform duration-700 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] [-webkit-tap-highlight-color:transparent] max-[600px]:[--fc-romani-fs:clamp(26px,6.2vw,40px)] max-[600px]:[--fc-ru-fs:clamp(20px,5.2vw,32px)] max-[600px]:[--flashcard-h:max(216px,min(288px,calc(100dvh_-_236px)))] max-[380px]:[--fc-romani-fs:clamp(24px,7vw,36px)] max-[380px]:[--fc-ru-fs:clamp(19px,6vw,30px)]",
+              flipped && "flipped"
+            )}
             role="button"
             tabIndex={0}
             aria-label="Перевернуть карточку"
-            onClick={() => setFlipped((f) => !f)}
+            onClick={() => setFlippedWithEngagement((f) => !f)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") setFlipped((f) => !f);
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setFlippedWithEngagement((f) => !f);
+              }
             }}
           >
-            <div className="flashcard-face flashcard-front">
-              <span className="corner">romani · {cardIndex + 1}</span>
-              <div />
-              <div className="romani">{currentCard.romaniWord}</div>
-              <div className="transcription">[ {currentCard.transcription} ]</div>
-              {currentCard.variants && currentCard.variants.length > 0 ? (
-                <div className="flashcard-variants">
-                  {currentCard.variants.map((v) => (
-                    <div key={v.romaniWord} className="flashcard-variant">
-                      <span className="register-badge">{REGISTER_LABEL[v.register]}</span>
-                      <span className="variant-word">{v.romaniWord}</span>
-                      <span className="variant-transcription">[ {v.transcription} ]</span>
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+            <div className={cx(flashcardFaceClass, "bg-cream text-ink after:pointer-events-none after:absolute after:-bottom-20 after:-left-20 after:size-[220px] after:bg-[radial-gradient(circle,rgba(212,147,58,0.30),transparent_65%)]")}>
+              <span className="absolute right-[22px] top-[18px] font-mono text-[11px] uppercase tracking-[0.18em] opacity-50 max-[600px]:right-4 max-[600px]:top-3.5 max-[600px]:text-[9px] max-[600px]:tracking-[0.14em]">romani · {cardIndex + 1}</span>
+              <div className="relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2.5 pt-0.5">
+                <div className="m-0 max-w-full break-words text-center font-display text-[var(--fc-romani-fs)] italic leading-[1.08]">{currentCard.romaniWord}</div>
+                <div className="text-center font-mono text-sm tracking-[0.12em] text-ink-mute max-[600px]:text-xs max-[600px]:tracking-[0.08em] max-[380px]:text-[11px]">[ {currentCard.transcription} ]</div>
+                {currentCard.variants && currentCard.variants.length > 0 ? (
+                  <div className="mt-2.5 flex w-full max-w-full flex-col items-center gap-2 border-t border-dashed border-[rgba(26,20,12,0.16)] pt-2.5 max-[600px]:mt-2 max-[600px]:gap-1.5 max-[600px]:pt-2">
+                    {currentCard.variants.map((v) => (
+                      <div key={v.romaniWord} className="inline-flex flex-wrap items-baseline justify-center gap-2 font-mono text-xs text-ink-soft max-[600px]:gap-1.5 max-[600px]:text-[10px] max-[600px]:leading-[1.3]">
+                        <span className="inline-block rounded-pill border border-[rgba(26,20,12,0.22)] px-1.5 py-px font-mono text-[9px] uppercase tracking-[0.16em] text-ink-mute max-[600px]:text-[8px] max-[600px]:tracking-[0.12em]">{REGISTER_LABEL[v.register]}</span>
+                        <span className="font-display text-xl italic text-ink max-[600px]:text-[16px]">{v.romaniWord}</span>
+                        <span className="tracking-[0.10em] text-ink-mute max-[600px]:tracking-[0.06em]">[ {v.transcription} ]</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             </div>
-            <div className="flashcard-face flashcard-back">
-              <span className="corner" style={{ color: "rgba(251,246,232,0.7)" }}>
+            <div className={cx(flashcardFaceClass, "flashcard-back bg-ink text-cream [transform:rotateY(180deg)] after:pointer-events-none after:absolute after:-right-20 after:-top-20 after:size-60 after:bg-[radial-gradient(circle,rgba(169,52,40,0.4),transparent_60%)]")}>
+              <span className="absolute right-[22px] top-[18px] font-mono text-[11px] uppercase tracking-[0.18em] text-cream/70 opacity-70 max-[600px]:right-4 max-[600px]:top-3.5 max-[600px]:text-[9px] max-[600px]:tracking-[0.14em]">
                 перевод
               </span>
-              <div />
-              <div className="ru-translation">{currentCard.translationRu}</div>
-              <div className="transcription">{currentCard.romaniWord}</div>
+              <div className="flashcard-back-stack relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-between gap-3">
+                <div className="flex w-full shrink-0 flex-col items-center">
+                  <div className="m-0 max-w-full break-words text-center font-display text-[var(--fc-ru-fs)] font-normal leading-[1.12] text-cream">{currentCard.translationRu}</div>
+                </div>
+                <div className="flashcard-context-slot flex w-full shrink-0 flex-col items-center justify-center">
+                  <LearningContextBlock
+                    senseNote={currentCard.senseNote}
+                    dialectNote={currentCard.dialectNote}
+                    variant="flashcard"
+                  />
+                </div>
+                <div className="flex w-full shrink-0 flex-col items-center">
+                  <div className="text-center font-mono text-sm tracking-[0.12em] text-cream/55 max-[600px]:text-xs max-[600px]:tracking-[0.08em] max-[380px]:text-[11px]">{currentCard.romaniWord}</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flashcard-nav">
+        <div className={cx("flashcard-nav mt-1 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 max-[520px]:gap-1.5", cardIndex + 1 >= words.length && "is-final")}>
           <button
-            className="icon-btn"
+            className={iconButtonClass}
             type="button"
             aria-label="Предыдущая карточка"
             onClick={() => navigateCard(-1)}
@@ -411,13 +500,16 @@ export function LessonTrainer({
           >
             ←
           </button>
-          <span className="center">
-            нажмите карточку или <kbd style={{ fontFamily: "var(--font-mono)" }}>пробел</kbd>, чтобы
-            перевернуть
+          <span className="min-w-0 break-words text-center font-mono text-xs uppercase tracking-[0.18em] text-ink-mute hyphens-auto max-[520px]:text-[8px] max-[520px]:leading-[1.3] max-[520px]:tracking-[0.1em]">
+            <span className="flashcard-hint-full">
+              нажмите карточку или <kbd className="font-mono">пробел</kbd>, чтобы
+              перевернуть
+            </span>
+            <span className="flashcard-hint-short">касание или тап — перевернуть</span>
           </span>
           {cardIndex + 1 < words.length ? (
             <button
-              className="icon-btn"
+              className={iconButtonClass}
               type="button"
               aria-label="Следующая карточка"
               onClick={() => navigateCard(1)}
@@ -426,9 +518,11 @@ export function LessonTrainer({
             </button>
           ) : (
             <button
-              className="btn btn-madder"
+              className={cx(
+                button.madder,
+                "flashcard-check-btn h-12 w-auto max-w-full shrink-0 !min-h-0 !px-5 !py-0 text-sm leading-tight transition-[background-color,box-shadow,color,border-color] duration-150 hover:!translate-y-0 enabled:hover:!translate-y-0 active:!translate-y-0 active:!scale-100 max-[520px]:min-h-11 max-[520px]:h-auto max-[520px]:!px-3 max-[520px]:!py-2.5 max-[520px]:whitespace-normal max-[520px]:text-center max-[520px]:text-[13px] max-[380px]:min-h-[42px]"
+              )}
               type="button"
-              style={{ padding: "12px 18px" }}
               onClick={() => {
                 if (flipTimer.current) {
                   clearTimeout(flipTimer.current);
@@ -448,16 +542,12 @@ export function LessonTrainer({
         </div>
 
         <div
-          className="ticket"
-          style={{ maxWidth: 560, margin: "12px auto 0", textAlign: "center" }}
+          className={cx(card.ticket, "mx-auto mt-1 max-w-[560px] px-2 py-6 text-center max-[600px]:hidden")}
         >
-          <p
-            className="kicker"
-            style={{ marginBottom: 4, color: "var(--saffron-deep)" }}
-          >
+          <p className={cx(text.kicker, "mb-1 text-saffron-deep")}>
             ✦ совет
           </p>
-          <p style={{ margin: 0, fontSize: 14, color: "var(--ink-soft)" }}>
+          <p className={text.bodySm}>
             Произнесите слово вслух, прежде чем переворачивать карточку — так оно лучше запомнится.
           </p>
         </div>
@@ -467,68 +557,59 @@ export function LessonTrainer({
 
   // QUIZ stage
   return (
-    <div className="lesson-shell" style={{ padding: 0 }}>
-      <div className="trainer-progress" style={{ alignItems: "flex-start" }}>
+    <div className={trainerShellClass}>
+      <div className={progressClass}>
         <span>
           Вопрос {quizIndex + 1} / {quizOrder.length}
         </span>
-        <div className="bar">
-          <div style={{ width: `${((quizIndex + 1) / quizOrder.length) * 100}%` }} />
+        <div className={progressBarClass}>
+          <div className="h-full bg-ink transition-[width] duration-500" style={{ width: `${((quizIndex + 1) / quizOrder.length) * 100}%` }} />
         </div>
       </div>
 
-      <div className="quiz-card reveal">
-        <div className="quiz-prompt">
-          <p className="ask">переведите слово</p>
-          <p className="word">{currentQuiz?.romaniWord}</p>
-          <p className="transcription">[ {currentQuiz?.transcription} ]</p>
+        <div className={cx("grid gap-6 rounded-card bg-cream p-9 shadow-page max-[600px]:gap-[18px] max-[600px]:px-4 max-[600px]:py-5 max-[380px]:gap-3.5 max-[380px]:px-3 max-[380px]:py-4", reveal.base)}>
+        <div className="grid gap-2.5 text-center max-[380px]:gap-1.5">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-mute">переведите слово</p>
+          <p className="font-display text-[clamp(48px,6vw,84px)] italic leading-none tracking-[-0.015em] max-[600px]:text-[clamp(36px,11vw,56px)] max-[600px]:leading-[1.05] max-[380px]:text-[clamp(32px,10vw,48px)]">{currentQuiz?.romaniWord}</p>
+          <p className="font-mono text-sm tracking-[0.1em] text-ink-mute max-[600px]:text-xs max-[600px]:tracking-[0.08em]">[ {currentQuiz?.transcription} ]</p>
+          {currentQuiz ? (
+            <LearningContextBlock
+              senseNote={currentQuiz.senseNote}
+              dialectNote={currentQuiz.dialectNote}
+              variant="quiz"
+            />
+          ) : null}
         </div>
 
-        <div className="quiz-options" role="radiogroup" aria-label="Варианты перевода">
+        <div className="grid grid-cols-2 gap-3 max-[600px]:grid-cols-1" role="radiogroup" aria-label="Варианты перевода">
           {options.map((option, i) => {
             const isCorrect = locked && option === currentQuiz?.translationRu;
             const isWrong = locked && option === selected && option !== currentQuiz?.translationRu;
-            const cls = [
-              "quiz-option",
-              isCorrect ? "correct" : "",
-              isWrong ? "wrong" : ""
-            ]
-              .filter(Boolean)
-              .join(" ");
             return (
               <button
                 key={option}
                 type="button"
-                className={cls}
+                className={cx(
+                  "group grid cursor-pointer grid-cols-[28px_1fr] items-center gap-3.5 rounded-2xl border-[1.5px] border-transparent bg-paper-warm px-5 py-[22px] text-left font-display text-[22px] font-medium text-ink transition-[transform,border-color,background] hover:-translate-y-0.5 hover:border-ink disabled:cursor-default max-[600px]:min-h-14 max-[600px]:px-3 max-[600px]:py-3.5 max-[600px]:text-[clamp(17px,5vw,20px)]",
+                  isCorrect && "border-teal bg-[rgba(37,86,79,0.15)]",
+                  isWrong && "border-madder bg-[rgba(169,52,40,0.12)]"
+                )}
                 onClick={() => pickOption(option)}
                 disabled={locked}
               >
-                <span className="key">{String.fromCharCode(65 + i)}</span>
+                <span className="grid size-7 place-items-center rounded-lg border border-[rgba(26,20,12,0.16)] bg-cream font-mono text-xs font-semibold text-ink-soft transition-colors group-hover:bg-ink group-hover:text-cream">{String.fromCharCode(65 + i)}</span>
                 <span>{option}</span>
               </button>
             );
           })}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            paddingTop: 4,
-            borderTop: "1px dashed rgba(26,20,12,0.18)",
-            color: "var(--ink-mute)",
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            letterSpacing: "0.16em",
-            textTransform: "uppercase"
-          }}
-        >
+        <div className="flex items-center justify-between border-t border-dashed border-[rgba(26,20,12,0.18)] pt-1 font-mono text-[11px] uppercase tracking-[0.16em] text-ink-mute max-[380px]:gap-2.5 max-[380px]:text-[9px] max-[380px]:tracking-[0.11em]">
           <span>
-            правильно: <strong style={{ color: "var(--teal-deep)" }}>{score}</strong>
+            правильно: <strong className="text-teal-deep">{score}</strong>
           </span>
           <span>
-            ошибок: <strong style={{ color: "var(--madder)" }}>{mistakes.length}</strong>
+            ошибок: <strong className="text-madder">{mistakes.length}</strong>
           </span>
         </div>
       </div>
