@@ -1,4 +1,6 @@
 # На сервере: скопируйте .env.example в .env и задайте NEXTAUTH_SECRET и публичные URL.
+# Запуск в фоне: docker compose up -d --build (иначе Ctrl+C останавливает контейнеры).
+# Снаружи должен быть открыт TCP-порт WEB_PORT (ufw allow … / security group панели VPS).
 services:
   db:
     image: postgres:16-alpine
@@ -19,7 +21,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-3005}:3000"
+      - "0.0.0.0:${WEB_PORT:-3005}:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-romaniflow}
       NEXTAUTH_URL: ${NEXTAUTH_URL:?Set NEXTAUTH_URL in project .env}
