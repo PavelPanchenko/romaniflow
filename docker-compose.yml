@@ -19,7 +19,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-3000}:3000"
+      - "${WEB_PORT:-3005}:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-romaniflow}
       NEXTAUTH_URL: ${NEXTAUTH_URL:?Set NEXTAUTH_URL in project .env}
