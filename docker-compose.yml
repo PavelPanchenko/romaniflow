@@ -27,6 +27,7 @@ services:
       NEXTAUTH_URL: ${NEXTAUTH_URL:?Set NEXTAUTH_URL in project .env}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?Set NEXTAUTH_SECRET in project .env}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?Set NEXT_PUBLIC_SITE_URL in project .env}
+      SKIP_PRISMA_SEED: ${SKIP_PRISMA_SEED:-0}
     depends_on:
       db:
         condition: service_healthy
