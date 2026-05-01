@@ -572,13 +572,7 @@ export function LessonTrainer({
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-mute">переведите слово</p>
           <p className="font-display text-[clamp(48px,6vw,84px)] italic leading-none tracking-[-0.015em] max-[600px]:text-[clamp(36px,11vw,56px)] max-[600px]:leading-[1.05] max-[380px]:text-[clamp(32px,10vw,48px)]">{currentQuiz?.romaniWord}</p>
           <p className="font-mono text-sm tracking-[0.1em] text-ink-mute max-[600px]:text-xs max-[600px]:tracking-[0.08em]">[ {currentQuiz?.transcription} ]</p>
-          {currentQuiz ? (
-            <LearningContextBlock
-              senseNote={currentQuiz.senseNote}
-              dialectNote={currentQuiz.dialectNote}
-              variant="quiz"
-            />
-          ) : null}
+          {/* В квизе не показываем контекстные заметки, чтобы не подсказывать ответ. */}
         </div>
 
         <div className="grid grid-cols-2 gap-3 max-[600px]:grid-cols-1" role="radiogroup" aria-label="Варианты перевода">

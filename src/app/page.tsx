@@ -38,6 +38,9 @@ const featureCardClass =
 const featureNumberClass =
   "mb-[-8px] font-display text-[56px] italic leading-none text-madder opacity-85 max-[600px]:text-4xl";
 
+const heroStatNumberClass =
+  "mb-0.5 block min-w-[3ch] whitespace-nowrap px-[2px] font-display text-[28px] font-medium leading-none text-ink [font-variant-numeric:tabular-nums] max-[540px]:mb-0 max-[600px]:text-[22px]";
+
 export default async function HomePage() {
   const user = await getSessionUser();
   const isAuthed = Boolean(user);
@@ -92,17 +95,17 @@ export default async function HomePage() {
             </div>
             <div className={cx("mt-7 flex flex-wrap items-center gap-[30px] text-[13px] text-ink-mute max-[540px]:flex-col max-[540px]:items-stretch max-[540px]:gap-3.5 max-[540px]:[&>span]:grid max-[540px]:[&>span]:grid-cols-[auto_1fr] max-[540px]:[&>span]:items-center max-[540px]:[&>span]:gap-3 max-[540px]:[&>span]:border-b max-[540px]:[&>span]:border-dashed max-[540px]:[&>span]:border-[rgba(26,20,12,0.14)] max-[540px]:[&>span]:pb-3.5 max-[540px]:[&>span:last-child]:border-b-0 max-[540px]:[&>span:last-child]:pb-0 max-[540px]:[&_br]:hidden max-[600px]:mt-[18px]", reveal[5])}>
               <span>
-                <strong className="mb-0.5 block font-display text-[28px] font-medium leading-none text-ink max-[540px]:mb-0 max-[600px]:text-[22px]">{wordsRounded}+</strong>
+                <strong className={heroStatNumberClass}>{wordsRounded}+</strong>
                 слов в карточках
                 <br /> с транскрипцией
               </span>
               <span>
-                <strong className="mb-0.5 block font-display text-[28px] font-medium leading-none text-ink max-[540px]:mb-0 max-[600px]:text-[22px]">5</strong>
+                <strong className={heroStatNumberClass}>5</strong>
                 диалектов: от сэрвов
                 <br /> до крымских
               </span>
               <span>
-                <strong className="mb-0.5 block font-display text-[28px] font-medium leading-none text-ink max-[540px]:mb-0 max-[600px]:text-[22px]">∞</strong>
+                <strong className={heroStatNumberClass}>∞</strong>
                 повторений без
                 <br /> штрафов и таймеров
               </span>
