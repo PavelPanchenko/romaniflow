@@ -18,10 +18,11 @@ import { KRYMURYA_FORMS } from "./krymurya";
 
 export type FormSeedResult = {
   upserted: number;
+  pruned: number;
   skipped: { conceptSlug: string; dialect: Dialect; romaniWord: string }[];
 };
 
-const ALL_FORMS: FormSeed[] = [
+export const ALL_FORMS: FormSeed[] = [
   ...SERVY_FORMS,
   ...VLAX_FORMS,
   ...RUSSKA_ROMA_FORMS,
@@ -29,10 +30,14 @@ const ALL_FORMS: FormSeed[] = [
   ...KRYMURYA_FORMS
 ];
 
+function formKey(f: Pick<FormSeed, "conceptSlug" | "dialect" | "romaniWord">): string {
+  return `${f.conceptSlug}\u0000${f.dialect}\u0000${f.romaniWord}`;
+}
+
 export async function seedForms(
   prisma: PrismaClient
 ): Promise<FormSeedResult> {
-  const result: FormSeedResult = { upserted: 0, skipped: [] };
+  const result: FormSeedResult = { upserted: 0, pruned: 0, skipped: [] };
 
   // Cache slug → conceptId so we don't hammer Postgres on large batches.
   const slugToId = new Map<string, string>();
@@ -87,14 +92,38 @@ export async function seedForms(
     result.upserted++;
   }
 
+  const currentKeys = new Set(ALL_FORMS.map(formKey));
+  const existingForms = await prisma.dialectForm.findMany({
+    select: {
+      id: true,
+      dialect: true,
+      romaniWord: true,
+      concept: { select: { slug: true } }
+    }
+  });
+  const staleIds = existingForms
+    .filter((f) => !currentKeys.has(formKey({
+      conceptSlug: f.concept.slug,
+      dialect: f.dialect,
+      romaniWord: f.romaniWord
+    })))
+    .map((f) => f.id);
+
+  if (staleIds.length) {
+    const stale = await prisma.dialectForm.deleteMany({
+      where: { id: { in: staleIds } }
+    });
+    result.pruned = stale.count;
+  }
+
   return result;
 }
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const prisma = new PrismaClient();
   seedForms(prisma)
-    .then(({ upserted, skipped }) => {
-      console.log(`✦ forms: ${upserted} upserted`);
+    .then(({ upserted, pruned, skipped }) => {
+      console.log(`✦ forms: ${upserted} upserted · ${pruned} pruned`);
       if (skipped.length) {
         console.log(`  ⚠ ${skipped.length} skipped (missing concept):`);
         for (const s of skipped) {

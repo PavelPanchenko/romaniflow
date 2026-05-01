@@ -16,6 +16,7 @@ export type ConceptSeedResult = {
   enriched: number;     // concepts already in DB, updated in place
   created: number;      // new concepts inserted (no forms yet)
   reslugged: number;    // concepts found by translationRu but slug changed
+  pruned: number;       // stale concepts removed from DB
 };
 
 // Two pass match: prefer slug, fall back to translationRu so that legacy
@@ -37,6 +38,7 @@ export async function seedConcepts(
   let enriched = 0;
   let created = 0;
   let reslugged = 0;
+  const currentSlugs = CONCEPTS.map((c) => c.slug);
 
   for (const c of CONCEPTS) {
     const found = await findExisting(prisma, c);
@@ -71,15 +73,19 @@ export async function seedConcepts(
     }
   }
 
-  return { enriched, created, reslugged };
+  const stale = await prisma.concept.deleteMany({
+    where: { slug: { notIn: currentSlugs } }
+  });
+
+  return { enriched, created, reslugged, pruned: stale.count };
 }
 
 if (process.argv[1] && import.meta.url === new URL(`file://${process.argv[1]}`).href) {
   const prisma = new PrismaClient();
   seedConcepts(prisma)
-    .then(({ enriched, created, reslugged }) => {
+    .then(({ enriched, created, reslugged, pruned }) => {
       console.log(
-        `✦ concepts: ${enriched} enriched · ${created} created · ${reslugged} reslugged`
+        `✦ concepts: ${enriched} enriched · ${created} created · ${reslugged} reslugged · ${pruned} pruned`
       );
     })
     .catch((e) => {

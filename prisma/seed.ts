@@ -1,24 +1,11 @@
 import { PrismaClient, BillingInterval, Dialect, SubscriptionStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import type { CourseSeed } from "./seeds/types";
-import { servyCourse } from "./seeds/servy";
-import { vlaxCourse } from "./seeds/vlax";
-import { russkaRomaCourse } from "./seeds/russka_roma";
-import { lovariCourse } from "./seeds/lovari";
-import { krymuryaCourse } from "./seeds/krymurya";
+import { CURRENT_COURSE_SLUGS, courses } from "./seeds/course-catalog";
 import { seedConcepts } from "./seeds/concepts/seed";
 import { seedForms } from "./seeds/forms/seed";
 import { buildLessons } from "./seeds/build-lessons";
 
 const prisma = new PrismaClient();
-
-const courses: CourseSeed[] = [
-  servyCourse,
-  vlaxCourse,
-  russkaRomaCourse,
-  lovariCourse,
-  krymuryaCourse
-];
 
 async function main() {
   // Plans — Free остаётся как тариф по умолчанию для новых регистраций
@@ -78,6 +65,12 @@ async function main() {
       }
     });
   }
+  const staleCourses = await prisma.course.deleteMany({
+    where: { slug: { notIn: CURRENT_COURSE_SLUGS } }
+  });
+  if (staleCourses.count) {
+    console.log(`  ✂ stale courses pruned: ${staleCourses.count}`);
+  }
 
   // Demo user, with Servy preselected
   const passwordHash = await bcrypt.hash("demo12345", 10);
@@ -115,11 +108,11 @@ async function main() {
 
   const conceptSeed = await seedConcepts(prisma);
   console.log(
-    `✦ concepts: ${conceptSeed.enriched} enriched · ${conceptSeed.created} created · ${conceptSeed.reslugged} reslugged`
+    `✦ concepts: ${conceptSeed.enriched} enriched · ${conceptSeed.created} created · ${conceptSeed.reslugged} reslugged · ${conceptSeed.pruned} pruned`
   );
 
   const formSeed = await seedForms(prisma);
-  console.log(`✦ forms: ${formSeed.upserted} upserted`);
+  console.log(`✦ forms: ${formSeed.upserted} upserted · ${formSeed.pruned} pruned`);
   if (formSeed.skipped.length) {
     console.log(`  ⚠ ${formSeed.skipped.length} skipped (no concept match):`);
     for (const s of formSeed.skipped) {

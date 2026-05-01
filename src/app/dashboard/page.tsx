@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { hasPremiumAccess } from "@/lib/monetization";
 import { getSessionUser } from "@/lib/session";
 import { dialectByCode, defaultDialect } from "@/lib/dialects";
+import { countFlashcardWords } from "@/lib/content-stats";
 import { button, card, cx, layout, reveal, tag, text } from "@/lib/ui-classes";
 
 function percent(value: number): string {
@@ -70,7 +71,7 @@ export default async function DashboardPage() {
     (lesson) => lesson.progress[0]?.status === ProgressStatus.IN_PROGRESS
   );
   const overallProgress = lessons.length ? (completed.length / lessons.length) * 100 : 0;
-  const totalWords = lessons.reduce((sum, lesson) => sum + lesson.items.length, 0);
+  const totalWords = await countFlashcardWords(dbUser.preferredDialect);
 
   // Aggregate distinct mistakes across the user's progress (current dialect
   // only) — drives the "Повторить ошибки" pill.

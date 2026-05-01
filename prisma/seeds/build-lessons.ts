@@ -24,6 +24,7 @@ import {
   LessonType,
   PrismaClient
 } from "@prisma/client";
+import { CURRENT_COURSE_SLUGS } from "./course-catalog";
 
 export type LessonGroupSpec = {
   order: number;
@@ -160,7 +161,9 @@ export async function buildLessons(prisma: PrismaClient): Promise<BuildResult> {
     prunedEmptyLessons: 0
   };
 
-  const courses = await prisma.course.findMany();
+  const courses = await prisma.course.findMany({
+    where: { slug: { in: CURRENT_COURSE_SLUGS } }
+  });
   result.courses = courses.length;
 
   for (const course of courses) {

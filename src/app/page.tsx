@@ -5,7 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Ornament } from "@/components/ornament";
 import { DIALECTS } from "@/lib/dialects";
 import { getSessionUser } from "@/lib/session";
-import { db } from "@/lib/db";
+import { getRoundedFlashcardWordCount } from "@/lib/content-stats";
 import { getSiteUrl } from "@/lib/site-url";
 import { SITE_DESCRIPTION } from "@/lib/seo-constants";
 import { buildHomeWebSiteJsonLd } from "@/lib/structured-data";
@@ -44,10 +44,7 @@ const heroStatNumberClass =
 export default async function HomePage() {
   const user = await getSessionUser();
   const isAuthed = Boolean(user);
-  // Round word count down to the nearest 50 — the exact figure shifts each
-  // seed and an oddly precise number ("1188+ слов") looks like marketing noise.
-  const totalWords = await db.lessonItem.count();
-  const wordsRounded = Math.floor(totalWords / 50) * 50;
+  const wordsRounded = await getRoundedFlashcardWordCount();
   const siteUrl = getSiteUrl();
   const jsonLd = buildHomeWebSiteJsonLd(siteUrl);
   return (
