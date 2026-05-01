@@ -13,7 +13,8 @@ RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 RUN npm prune --omit=dev
-RUN npm install prisma@6.7.0
+# tsx нужен для prisma db seed в runtime; prisma CLI уже добавлен после prune.
+RUN npm install prisma@6.7.0 tsx@4.19.3
 
 FROM base AS runner
 ENV NODE_ENV=production
