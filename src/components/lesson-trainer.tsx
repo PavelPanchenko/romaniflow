@@ -36,7 +36,20 @@ const progressBarClass = "h-1 w-[200px] overflow-hidden rounded-pill bg-[rgba(26
 const iconButtonClass =
   "grid size-12 cursor-pointer place-items-center rounded-full border border-[rgba(26,20,12,0.18)] bg-cream text-ink transition-[background,color,border-color,transform] hover:border-ink hover:bg-ink hover:text-cream active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 max-[520px]:size-11 max-[380px]:size-[42px]";
 const flashcardFaceClass =
-  "flashcard-face relative col-start-1 row-start-1 flex w-full min-w-0 flex-col items-center justify-start overflow-hidden rounded-[26px] px-8 pb-8 pt-10 shadow-page [backface-visibility:hidden] max-[600px]:rounded-[20px] max-[600px]:px-3.5 max-[600px]:pb-4 max-[600px]:pt-7 max-[380px]:rounded-[18px] max-[380px]:px-3 max-[380px]:pb-3.5 max-[380px]:pt-[26px]";
+  "flashcard-face absolute inset-0 flex h-full w-full min-w-0 flex-col items-center justify-start rounded-[26px] px-8 pb-8 pt-10 shadow-page [backface-visibility:hidden] max-[600px]:rounded-[20px] max-[600px]:px-3.5 max-[600px]:pb-4 max-[600px]:pt-7 max-[380px]:rounded-[18px] max-[380px]:px-3 max-[380px]:pb-3.5 max-[380px]:pt-[26px]";
+/** Лицевая сторона: обрезаем декоративные градиенты. Оборот: отдельно — прокрутка, иначе на мобилке текст наслаивается. */
+const flashcardFaceOverflowFront = "overflow-hidden";
+const flashcardFaceOverflowBack =
+  "overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]";
+
+function normalizeLearningNote(value: string): string {
+  return value
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/\(\s*я\s*\)\s*/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 function LearningContextBlock({
   senseNote,
@@ -51,7 +64,7 @@ function LearningContextBlock({
   const d = dialectNote?.trim() || "";
   if (!s && !d) return null;
   const primary = s || d;
-  const dialectExtra = s && d && d !== s ? d : "";
+  const dialectExtra = s && d && normalizeLearningNote(d) !== normalizeLearningNote(s) ? d : "";
   const kicker = s ? "контекст" : "подсказка";
 
   if (variant === "quiz") {
@@ -64,12 +77,14 @@ function LearningContextBlock({
   }
 
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-2">
+    <div className="flex w-full flex-col items-stretch justify-start gap-2">
       <div className="w-full shrink-0 rounded-[14px] border border-cream/15 bg-cream/10 px-3.5 py-2.5 text-center">
         <div className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.18em] text-saffron-soft opacity-90">{kicker}</div>
-        <p className="m-0 text-sm leading-[1.45] text-cream/90 max-[600px]:text-[13px] max-[380px]:text-xs">{primary}</p>
+        <p className="m-0 break-words text-sm leading-[1.55] text-cream/90 max-[600px]:text-[13px] max-[380px]:text-xs">{primary}</p>
       </div>
-      {dialectExtra ? <p className="m-0 px-2 text-center text-xs leading-[1.4] text-cream/50">{dialectExtra}</p> : null}
+      {dialectExtra ? (
+        <p className="m-0 break-words px-2 text-center text-xs leading-[1.5] text-cream/50">{dialectExtra}</p>
+      ) : null}
     </div>
   );
 }
@@ -435,7 +450,7 @@ export function LessonTrainer({
         <div className="grid place-items-center py-3.5 [perspective:1600px] max-[600px]:py-1">
           <div
             className={cx(
-              "flashcard grid w-[min(560px,100%)] grid-cols-[min(560px,100%)] [--fc-romani-fs:clamp(28px,4.5vw,46px)] [--fc-ru-fs:clamp(22px,3.8vw,36px)] [--flashcard-h:max(232px,min(312px,calc(100dvh_-_320px)))] min-h-[var(--flashcard-h)] cursor-pointer touch-manipulation [transform-style:preserve-3d] transition-transform duration-700 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] [-webkit-tap-highlight-color:transparent] max-[600px]:[--fc-romani-fs:clamp(26px,6.2vw,40px)] max-[600px]:[--fc-ru-fs:clamp(20px,5.2vw,32px)] max-[600px]:[--flashcard-h:max(216px,min(288px,calc(100dvh_-_236px)))] max-[380px]:[--fc-romani-fs:clamp(24px,7vw,36px)] max-[380px]:[--fc-ru-fs:clamp(19px,6vw,30px)]",
+              "flashcard relative grid h-[var(--flashcard-h)] w-[min(560px,100%)] grid-cols-[min(560px,100%)] [--fc-romani-fs:clamp(28px,4.5vw,46px)] [--fc-ru-fs:clamp(22px,3.8vw,36px)] [--flashcard-h:max(232px,min(312px,calc(100dvh_-_320px)))] cursor-pointer touch-manipulation [transform-style:preserve-3d] transition-transform duration-700 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] [-webkit-tap-highlight-color:transparent] max-[600px]:[--fc-romani-fs:clamp(26px,6.2vw,40px)] max-[600px]:[--fc-ru-fs:clamp(20px,5.2vw,32px)] max-[600px]:[--flashcard-h:max(216px,min(288px,calc(100dvh_-_236px)))] max-[380px]:[--fc-romani-fs:clamp(24px,7vw,36px)] max-[380px]:[--fc-ru-fs:clamp(19px,6vw,30px)]",
               flipped && "flipped"
             )}
             role="button"
@@ -449,7 +464,13 @@ export function LessonTrainer({
               }
             }}
           >
-            <div className={cx(flashcardFaceClass, "bg-cream text-ink after:pointer-events-none after:absolute after:-bottom-20 after:-left-20 after:size-[220px] after:bg-[radial-gradient(circle,rgba(212,147,58,0.30),transparent_65%)]")}>
+            <div
+              className={cx(
+                flashcardFaceClass,
+                flashcardFaceOverflowFront,
+                "flashcard-front bg-cream text-ink after:pointer-events-none after:absolute after:-bottom-20 after:-left-20 after:size-[220px] after:bg-[radial-gradient(circle,rgba(212,147,58,0.30),transparent_65%)]"
+              )}
+            >
               <span className="absolute right-[22px] top-[18px] font-mono text-[11px] uppercase tracking-[0.18em] opacity-50 max-[600px]:right-4 max-[600px]:top-3.5 max-[600px]:text-[9px] max-[600px]:tracking-[0.14em]">romani · {cardIndex + 1}</span>
               <div className="relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2.5 pt-0.5">
                 <div className="m-0 max-w-full break-words text-center font-display text-[var(--fc-romani-fs)] italic leading-[1.08]">{currentCard.romaniWord}</div>
@@ -467,23 +488,33 @@ export function LessonTrainer({
                 ) : null}
               </div>
             </div>
-            <div className={cx(flashcardFaceClass, "flashcard-back bg-ink text-cream [transform:rotateY(180deg)] after:pointer-events-none after:absolute after:-right-20 after:-top-20 after:size-60 after:bg-[radial-gradient(circle,rgba(169,52,40,0.4),transparent_60%)]")}>
-              <span className="absolute right-[22px] top-[18px] font-mono text-[11px] uppercase tracking-[0.18em] text-cream/70 opacity-70 max-[600px]:right-4 max-[600px]:top-3.5 max-[600px]:text-[9px] max-[600px]:tracking-[0.14em]">
+            <div
+              className={cx(
+                flashcardFaceClass,
+                flashcardFaceOverflowBack,
+                "flashcard-back isolate bg-ink text-cream after:pointer-events-none after:absolute after:-right-20 after:-top-20 after:z-0 after:size-60 after:bg-[radial-gradient(circle,rgba(169,52,40,0.4),transparent_60%)]"
+              )}
+            >
+              <span className="absolute right-[22px] top-[18px] z-10 font-mono text-[11px] uppercase tracking-[0.18em] text-cream/70 opacity-70 max-[600px]:right-4 max-[600px]:top-3.5 max-[600px]:text-[9px] max-[600px]:tracking-[0.14em]">
                 перевод
               </span>
-              <div className="flashcard-back-stack relative z-[1] flex min-h-0 w-full flex-1 flex-col items-center justify-between gap-3">
-                <div className="flex w-full shrink-0 flex-col items-center">
-                  <div className="m-0 max-w-full break-words text-center font-display text-[var(--fc-ru-fs)] font-normal leading-[1.12] text-cream">{currentCard.translationRu}</div>
+              <div className="flashcard-back-stack relative z-10 flex w-full flex-col items-stretch gap-4 px-0.5 pb-1 pt-1 max-[600px]:gap-3.5">
+                <div className="w-full shrink-0 text-center">
+                  <p className="m-0 max-w-full break-words font-display text-[var(--fc-ru-fs)] font-normal leading-[1.22] text-cream max-[600px]:leading-[1.2]">
+                    {currentCard.translationRu}
+                  </p>
                 </div>
-                <div className="flashcard-context-slot flex w-full shrink-0 flex-col items-center justify-center">
+                <div className="flashcard-context-slot w-full shrink-0">
                   <LearningContextBlock
                     senseNote={currentCard.senseNote}
                     dialectNote={currentCard.dialectNote}
                     variant="flashcard"
                   />
                 </div>
-                <div className="flex w-full shrink-0 flex-col items-center">
-                  <div className="text-center font-mono text-sm tracking-[0.12em] text-cream/55 max-[600px]:text-xs max-[600px]:tracking-[0.08em] max-[380px]:text-[11px]">{currentCard.romaniWord}</div>
+                <div className="w-full shrink-0 border-t border-cream/10 pt-3 text-center max-[600px]:pt-2.5">
+                  <p className="m-0 break-words font-mono text-sm leading-normal tracking-[0.12em] text-cream/55 max-[600px]:text-xs max-[600px]:tracking-[0.08em] max-[380px]:text-[11px]">
+                    {currentCard.romaniWord}
+                  </p>
                 </div>
               </div>
             </div>

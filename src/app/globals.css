@@ -203,9 +203,32 @@
 
   .module-accordion[open] .module-chevron svg { transform: rotate(180deg); }
 
-  .flashcard.flipped { transform: rotateY(180deg); }
-  .flashcard-face { -webkit-backface-visibility: hidden; }
-  .flashcard-back-stack:has(.flashcard-context-slot:empty) { justify-content: center; }
+  .flashcard {
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  .flashcard.flipped {
+    -webkit-transform: rotateY(180deg);
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-face {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+  }
+
+  .flashcard-front {
+    -webkit-transform: translateZ(0.1px);
+    transform: translateZ(0.1px);
+  }
+
+  .flashcard-back {
+    -webkit-transform: rotateY(180deg) translateZ(0.1px);
+    transform: rotateY(180deg) translateZ(0.1px);
+  }
 
   .flashcard-context-slot:empty,
   .flashcard-back-stack:has(.flashcard-context-slot:empty) .flashcard-context-slot:empty {
